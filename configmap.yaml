@@ -1,0 +1,14 @@
+BIZBOT_CASSANDRASEEDS: cassandra.seeds
+BIZBOT_KEYSPACEPREFIX: bizbot.keyspace_prefix
+BIZBOT_PROXYADDRS: bizbot.proxy_addrs
+BIZBOT_REPLICAFACTOR: bizbot.replica_factor
+BIZBOT_KAFKABROKERS: kafka.brokers
+BIZBOT_KAFKACSG: bizbot.consumer_group
+BIZBOT_GRPCPORT: bizbot.grpc_port
+BIZBOT_SHARDS: bizbot.shards
+BIZBOT_SERVICE: bizbot.service
+BIZBOT_CONVOSERVICE: conversation.service
+BIZBOT_REALTIMESERVICE: realtime.service
+BIZBOT_USERSERVICE: user.service
+BIZBOT_SRCACCKEYSPACEPREFIX: account.keyspace_prefix
+BIZBOT_SRCPAYMENTKEYSPACEPREFIX: payment.keyspaceprefix

@@ -1,0 +1,75 @@
+syntax = "proto2";
+
+package noti5;
+
+import "common.proto";
+
+option go_package = "github.com/subiz/header/noti5";
+
+message Subscription {
+	optional bool new_message = 3;
+	optional bool user_created = 6;
+	optional bool user_returned = 7;
+	optional bool campaign_user_converted = 8;
+	optional bool user_opened_email = 9;
+
+	optional int32 delay = 10;
+}
+
+message Setting {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string agent_id = 3;
+
+	optional int64 updated = 8;
+
+	optional Subscription web = 9; // desktop
+	optional Subscription mobile = 10;
+	optional Subscription email = 11;
+	optional Subscription instant = 15; // web
+
+	optional DoNotDisturb do_not_disturb = 12;
+	optional int64 instant_mute_until = 14;
+}
+
+message DoNotDisturb {
+	optional int64 daily_from = 2; // min
+	optional int64 daily_to = 3; // min
+	optional bool enable_daily = 5; // enable daily
+
+	optional int64 until = 4; // ms
+}
+
+message Token {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string user_id = 3;
+	optional string user_type = 4;
+	optional string fcm_token = 5;
+	optional string device_id = 6;
+	optional string platform = 7; // desktop, mobile
+	enum Platform {
+		desktop = 0;
+		mobile = 1;
+	}
+	optional int64 created = 8;
+	repeated string topics = 9;
+}
+
+message PushNoti {
+	optional common.Context ctx = 1;
+	optional string account_id = 3;
+	optional string user_id = 4; // to user
+
+	optional string platform = 5;
+	optional string title = 6;
+	optional string body = 7;
+	optional string conversation_id = 8;
+	optional string sender_id = 9;
+	optional string sender_type = 10;
+	optional string icon_url = 11;
+	optional string last_page_view_url = 12;
+	optional string type = 13; // type of event message_sent ...
+
+	repeated common.By tos = 15;
+}

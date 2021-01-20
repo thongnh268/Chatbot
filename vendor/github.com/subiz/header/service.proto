@@ -1,0 +1,413 @@
+syntax = "proto3";
+
+package header;
+
+option go_package = "github.com/subiz/header";
+
+import "common.proto";
+import "user.proto";
+import "conversation.proto";
+import "content.proto";
+import "payment.proto";
+import "notibox.proto";
+import "noti5.proto";
+import "account.proto";
+import "api.proto";
+import "bqreport.proto";
+import "header.proto";
+
+// api service
+service ApiServer {
+	rpc Call(api.Request) returns (api.Response);
+}
+
+service AccountMgr {
+	rpc CreateGroup(account.AgentGroup) returns (account.AgentGroup);
+	rpc UpdateGroup(account.AgentGroup) returns (account.AgentGroup);
+	rpc GetGroup(common.Id) returns (account.AgentGroup);
+	rpc RequestResetPassword(account.ResetPasswordRequest) returns (common.Empty);
+	rpc UpdatePassword(account.NewPassword) returns (account.Agent);
+	rpc UpdateAgent(account.Agent) returns (account.Agent);
+	rpc DeleteAgent(common.Id) returns (account.Agent);
+	rpc RequestChangeEmail(account.Agent) returns (common.Empty);// require password
+	rpc ConfirmChangeEmail(account.Token) returns (account.Agent);
+	rpc AcceptInvitation(account.NewPassword) returns (account.Agent);
+	rpc GetInvitation(account.Token) returns (account.Agent);
+	rpc InviteAgent(account.Agent) returns (account.Agent); // allow to call multiple time
+	rpc GetAgent(common.Id) returns (account.Agent);
+	rpc ConfirmAccount(account.Token) returns (account.Account);
+	rpc GetAccount(common.Id) returns (account.Account);
+	rpc UpdateAccount(account.Account) returns (account.Account);
+	rpc CreateAccount(account.CreateAccountRequest) returns (account.Account);
+	rpc ListAgents(common.Id) returns (account.Agents);
+	rpc CountAccount(account.CountRequest) returns (account.Count);
+
+	rpc DeleteGroup(common.Id) returns (common.Empty);
+	rpc ListGroups(common.Id) returns (account.AgentGroups);
+	rpc AddAgentToGroup(account.GroupMember) returns (common.Empty);
+	rpc RemoveAgentFromGroup(account.GroupMember) returns (common.Empty);
+	rpc ChangeEmail(account.Agent) returns (account.Agent);
+	rpc IntegrateBot(account.Agent) returns (account.Agent);
+	rpc SyncPublicHolidays(account.SyncPublicHolidaysRequest) returns (account.BusinessHours);
+	rpc TransferOwner(common.Id) returns (account.Agent);
+}
+
+service CurrencyMgr {
+	rpc ListCurrencies(common.Empty) returns (account.Currencies);
+	rpc GetCurrency(common.Id) returns (account.Currency);
+	rpc CreateCurrency(account.Currency) returns (account.Currency);
+	rpc UpdateCurrency(account.Currency) returns (account.Currency);
+	rpc DeleteCurrency(common.Id) returns (common.Empty);
+	rpc ListExchangeRates(account.ExchangeRateRequest) returns (account.ExchangeRates);
+	rpc GetExchangeRate(account.ExchangeRateRequest) returns (account.ExchangeRate);
+	rpc CreateExchangeRate(account.ExchangeRate) returns (account.ExchangeRate);
+	rpc DeleteExchangeRate(account.ExchangeRateRequest) returns (common.Empty);
+}
+
+// user services
+service UserMgr {
+	rpc SearchUsers (user.UserSearchRequest) returns (header.UserSearchResult); // deprecated
+	rpc SearchLeads (header.LeadSearchRequest) returns (header.LeadSearchResult);
+	rpc ListLeads (header.LeadSearchRequest) returns (header.LeadSearchResult);
+
+	rpc CreateUser (header.User) returns (common.Id);
+	rpc UpdateUser (header.User) returns (common.Id);
+	rpc ReadUser (common.Id) returns (header.User);
+
+	rpc ReportUsers (header.UserReportRequest) returns (header.UserReportResult);
+	rpc CountTotal(header.CountTotalRequest) returns (header.CountTotalResponse);
+	rpc Ping(common.PingRequest) returns (common.Pong);
+
+	rpc SearchNote (user.SearchNoteRequest) returns (user.SearchNoteResponse); // deprecated
+
+	rpc MatchUsers(common.Ids) returns (header.Users);
+}
+
+service LiveMgr {
+	rpc SearchLocations(header.LocationParams) returns (header.Locations);
+	rpc FilterActiveUsers(header.UserInfoParams) returns (header.Users);
+
+	rpc TopEvents(header.EventParams) returns (header.Events);
+	rpc TopLocations(common.Id) returns (header.LocationMetrics);
+	rpc TopPages(common.Id) returns (header.PageMetrics);
+	rpc TopSources(common.Id) returns (header.SourceMetrics);
+	rpc CountActiveUsers(common.Id) returns (header.UserMetric);
+	rpc Presences(header.PresencesRequest) returns (header.PresencesResponse);
+}
+
+service NoteMgr {
+	rpc ListNotes(header.ListNotesRequest) returns (header.Notes);
+	rpc AddNote(header.Note) returns (header.Note);
+	rpc UpdateNote(header.Note) returns (header.Note);
+	rpc DeleteNote(header.DeleteNoteRequest) returns (common.Empty);
+	rpc GetNote(header.GetNoteRequest) returns (header.Note);
+	rpc SearchNote(user.SearchNoteRequest) returns (user.SearchNoteResponse); // deprecated
+}
+
+service AutomationMgr {
+	rpc ListAutomations(common.Id) returns (header.Automations);
+	rpc UpdateAutomation(header.Automation) returns (header.Automation);
+	rpc DeleteAutomation(common.Id) returns (common.Empty);
+	rpc ReadAutomation(common.Id) returns (header.Automation);
+	rpc CreateAutomation(header.Automation) returns (header.Automation);
+}
+
+service AttributeMgr {
+	rpc ListAttributeDefinitions(common.Empty) returns (header.AttributeDefinitions);
+	rpc CreateAttributeDefinition(header.AttributeDefinition) returns (header.AttributeDefinition);
+	rpc UpdateAttributeDefinition(header.AttributeDefinition) returns (header.AttributeDefinition);
+	rpc DeleteAttributeDefinition(header.DeleteAttrRequest) returns (common.Empty);
+}
+
+// auth services
+service Perm {
+	rpc Update(common.UpdatePermRequest) returns (common.Empty);
+	rpc UpdateState(common.UpdateStateRequest) returns (common.Empty);
+	rpc ReadPerm(common.ReadPermRequest) returns (common.Permission);
+}
+
+// conversation services
+service ConversationReporter {
+	rpc CountConversationsByTags(conversation.CountByTagsRequest) returns (conversation.CountByTagsResponse);
+	rpc GetAvgResponseTimes(conversation.AvgResponseTimeRequest) returns (conversation.AvgResponseTimeResponse);
+	rpc GetTotalConversation(conversation.AvgResponseTimeRequest) returns (conversation.TotalConversationResponse);
+	rpc ReportConversations(conversation.CountReportRequest) returns (conversation.ReportResponse);
+	rpc ReportConversations2(conversation.ReportConversationsRequest) returns (conversation.ReportResponse);
+	rpc ReportAvailibilities(conversation.AvailibilityReportRequest) returns (conversation.ReportResponse);
+}
+
+service AgentPresenceMgr {
+	rpc ReadPresence (common.Id) returns (account.Presence);
+	rpc UpdatePresence (common.Id) returns (account.Presence);
+}
+
+service RuleMgr {
+	rpc UpdateRule(header.Rule) returns (header.Rule);
+	rpc CreateRule(header.Rule) returns (header.Rule);
+	rpc DeleteRule(common.Id) returns (common.Empty);
+	rpc ReadRule(common.Id) returns (header.Rule);
+	rpc ListRules(common.Id) returns (header.Route);
+}
+
+service ConversationMgr {
+	rpc AssignRule(header.AssignRequest) returns (header.RouteResult);
+	rpc PongMessage(header.Event) returns (header.Event);
+	// rpc UpdateConversationState(Conversation) returns (Conversation);
+	rpc StartConversation(header.StartRequest) returns (header.Conversation);
+	rpc EndConversation(common.Id) returns (header.Conversation);
+	rpc GetConversation(common.Id) returns (header.Conversation);
+	rpc ListConversations(header.ListConversationsRequest) returns (header.Conversations);
+	rpc MatchConversations(common.Ids) returns (header.Conversations);
+	rpc TagConversation(header.TagRequest) returns (common.Empty);
+	rpc UntagConversation(header.TagRequest) returns (common.Empty);
+
+	rpc JoinConversation(header.ConversationMember) returns (common.Empty);
+	rpc LeftConversation(header.ConversationMember) returns (common.Empty);
+	rpc Typing(common.Id) returns (common.Empty);
+	rpc Ping(common.PingRequest) returns (common.Pong);
+	rpc UpdateConversationInfo(header.Conversation) returns (header.Conversation);
+
+	rpc SearchConversation(conversation.SearchConversationRequest) returns (conversation.SearchConversationResponse);
+	rpc ListConversations2(conversation.ConversationListRequest) returns (conversation.ConversationListResponse);
+
+	rpc UpdateMuteConversation(header.Conversation) returns (common.Empty);
+	rpc UnwatchConversation(header.Conversation) returns (common.Empty);
+	rpc MarkReadConversation (header.Conversation) returns (common.Empty);
+
+	rpc UpdateEndchatSetting(header.EndchatSetting) returns (header.EndchatSetting);
+	rpc GetEndchatSetting(common.Id) returns (header.EndchatSetting);
+	rpc TerminateBot(header.BotTerminated) returns (header.Event);
+}
+
+service ConversationSyncMgr {
+	// sync automation
+	rpc FireConvertTicket(header.AutomationEvent) returns (common.Empty);
+	rpc FireSendChatTranscriptEmail(header.AutomationEvent) returns (common.Empty);
+	rpc FireUpdateConversationState(header.AutomationEvent) returns (common.Empty);
+}
+
+service TemplateMgr {
+	rpc CreateTemplate(header.Template) returns (header.Template);
+	rpc UpdateTemplate(header.Template) returns (header.Template);
+	rpc DeleteTemplate(common.Id) returns (common.Empty);
+	rpc GetTemplate(common.Id) returns (header.Template);
+	rpc ListTemplates(header.SearchTemplate) returns (header.Templates);
+	rpc PickTemplate(common.Id) returns (common.Empty);
+}
+
+service TagMgr {
+	rpc CreateTag(header.Tag) returns (header.Tag);
+	rpc UpdateTag(header.Tag) returns (header.Tag);
+	rpc DeleteTag(common.Id) returns (common.Empty);
+	rpc ListTags(common.Id) returns (header.Tags);
+	rpc GetTag(common.Id) returns (header.Tag);
+}
+
+service IntegrationMgr {
+	rpc Deintegrate(common.Id) returns (common.Empty);
+	rpc ListIntegrations(common.Id) returns (header.Integrations);
+	rpc Integrate(header.Integration) returns (header.Integration);
+	rpc CheckAvailability(header.AvailabilityCheckRequest) returns (header.AvailabilityCheckResult);
+}
+
+service TicketMgr {
+	rpc CreateTicket(conversation.Ticket) returns (conversation.Ticket);
+	rpc UpdateTicket(conversation.Ticket) returns (conversation.Ticket);
+	rpc DeleteTicket(conversation.DeleteTicketRequest) returns (common.Empty);
+	rpc GetTicket(conversation.GetTicketRequest) returns (conversation.Ticket);
+	rpc SearchTicket(conversation.TicketListRequest) returns (conversation.ESTickets);
+	rpc ListSLAs(common.Empty) returns (conversation.ServiceLevelAgreements);
+	rpc GetSLA(common.Id) returns (conversation.ServiceLevelAgreement);
+	rpc CreateSLA(conversation.ServiceLevelAgreement) returns (conversation.ServiceLevelAgreement);
+	rpc UpdateSLA(conversation.ServiceLevelAgreement) returns (conversation.ServiceLevelAgreement);
+	rpc DeleteSLA(common.Id) returns (common.Empty);
+	rpc CountTicket(conversation.CountTicketRequest) returns (conversation.CountTicketResponse);
+	rpc GetAvgResolveTimes(conversation.AvgResolveTimeRequest) returns (conversation.AvgResolveTimeResponse);
+}
+
+// client services
+service ClientMgr {
+	rpc Create(header.Client) returns (header.Client);
+	rpc Update(header.Client) returns (header.Client);
+	rpc Read(header.Client) returns (header.Client);
+	rpc ListIntegratedClients(common.Id) returns (header.AuthorizedClient); // account id
+	rpc ListAuthorizedClients(common.Id) returns (header.AuthorizedClient); // agent id
+}
+
+// content services
+service ServiceContentManager {
+	rpc UpsertContent(content.Content) returns (content.Content);
+	rpc DeleteContent(common.Id) returns (common.Empty);
+	rpc GetContent(common.Id) returns (content.Content);
+	rpc SearchContents(content.SearchContentRequest) returns (content.Contents);
+	rpc LookupContentsByUrl(content.LookupRequest) returns (content.Contents);
+	rpc LinkContentsToUrl(content.LinkRequest) returns (common.Empty);
+}
+
+service EventMgr {
+	rpc SearchEvents (header.ListUserEventsRequest) returns (header.Events);
+	rpc CreateEvent (header.UserEvent) returns (header.Event);
+}
+
+service ConversationEventReader {
+	rpc SendMessage(header.Event) returns (header.Event);
+	rpc UpdateMessage(header.Event) returns (header.Event);
+	rpc ListEvents(header.ListConversationEventsRequest) returns (header.Events);
+	rpc SearchEvents(header.SearchMessageRequest) returns (header.Events);
+}
+
+// file services
+service FileMgr {
+	rpc Presign(header.FileHeader) returns (header.PresignResult);
+	rpc Read(header.FileRequest) returns (header.File);
+	rpc Uploaded(header.FileRequest) returns (header.File);
+}
+
+// noti5 services
+service Noti5Service {
+	rpc ReadNotificationSetting(common.Id) returns (noti5.Setting);
+	rpc UpdateNotificationSetting(noti5.Setting) returns (noti5.Setting);
+
+	rpc Noti(noti5.PushNoti) returns (common.Empty);
+
+	rpc AddToken(noti5.Token) returns (common.Empty);
+	rpc RemoveToken(noti5.Token) returns (common.Empty);
+	rpc CheckTokenExists(noti5.Token) returns (common.Empty);
+}
+
+// notibox services
+service NotiboxService {
+	rpc ReadAllNotis(common.Id) returns (common.Empty);
+	rpc ListNotis(notibox.ListRequest) returns (notibox.Notifications);
+	rpc GetNotibox(common.Id) returns (notibox.Notibox);
+}
+
+// payment services
+service SubizInternalPaymentMgr {
+	rpc CreateBill(payment.Bill) returns (payment.Bill);
+	rpc UpdateExchangeRate(payment.ExchangeRate) returns (payment.ExchangeRate);
+}
+
+service PaymentMgr {
+	rpc SearchSub(account.SearchSubRequest) returns (account.AccSubs);
+	rpc Purchase(payment.Subscription) returns (payment.Invoice);
+	rpc UpdateSubscription(payment.Subscription) returns (payment.Subscription);
+	rpc GetSubscription(common.Id) returns (payment.Subscription);
+	rpc AddPaymentMethod(payment.PaymentMethod) returns (payment.PaymentMethod);
+	rpc UpdatePaymentMethod(payment.PaymentMethod) returns (payment.PaymentMethod);
+	rpc DeletePaymentMethod(common.Id) returns (common.Empty);
+	rpc ListPaymentMethods(common.Id) returns (payment.PaymentMethods);
+	rpc Pay(payment.PayRequest) returns (payment.Bill);
+	rpc ListInvoices(common.Id) returns (payment.Invoices);
+	rpc CreateInvoice(payment.Invoice) returns (payment.Invoice);
+	rpc UpdateInvoice(payment.Invoice) returns (payment.Invoice);
+	rpc FilterInvoices(payment.ListInvoiceRequest) returns (payment.Invoices);
+	rpc DraftInvoice(payment.Subscription) returns (payment.Invoice);
+	rpc DiffSubscriptions(payment.DiffSubRequest) returns (payment.Invoice);
+	rpc ListComments(payment.ListCommentsRequest) returns (payment.Comments);
+	rpc AddComment(payment.Comment) returns (payment.Comment);
+	rpc ListPlans(common.Empty) returns (payment.Plans);
+	rpc ExportInvoice(common.Id) returns (payment.String);
+	rpc ConvertInvoiceToHtml(payment.Invoice) returns (payment.String);
+	rpc GetExchangeRate(payment.ExchangeRate) returns (payment.ExchangeRate);
+	rpc TransferMoney(payment.PayRequest) returns (payment.Bill);
+	rpc ListLogs(payment.ListLogsRequest) returns (payment.Logs);
+
+	rpc CreatePromotionCode(payment.PromotionCode) returns (payment.PromotionCode);
+	rpc GetPromotionCode(payment.String) returns (payment.PromotionCode);
+	rpc UsePromotionCode(payment.PromotionCodeRequest) returns (common.Empty);
+	rpc ValidatePromotionCode(payment.PromotionCodeRequest) returns (payment.PromotionCode);
+	rpc ListPromotionCode(payment.ListPromotionCodeRequest) returns (payment.PromotionCodes);
+	rpc DeletePromotionCode(common.Id) returns (common.Empty);
+
+	rpc SearchReferral(payment.SearchReferredRequest) returns (payment.Referral);
+	rpc GetReferral(common.Id) returns (payment.Referral);
+	rpc ListTopReferral(common.Empty) returns (payment.ReferralResponse);
+	rpc UpdateReferral(payment.Referral) returns (payment.Referral);
+	rpc ListAccountReferred(common.Id) returns (payment.LogAccountReferreds);
+	rpc ListBillByAccountReferred(common.Id) returns (payment.LogBillByAccountReferreds);
+	rpc ListPaidForAgentReferrer(common.Id) returns (payment.LogPaidForAgentReferrers);
+	rpc PaidForAgentReferrer(payment.LogPaidForAgentReferrer) returns (common.Empty);
+}
+
+// pubsub services
+service Pubsub {
+	rpc Publish(header.PublishMessage) returns (common.Empty);
+}
+
+// pubsub services
+service Realtime {
+	rpc ShardSend(header.PublishMessage) returns (common.Empty);
+}
+
+// widget services
+service WidgetService {
+	rpc Read(common.Id) returns (header.WidgetSetting);
+	rpc Update(header.WidgetSetting) returns (header.WidgetSetting);
+	rpc ReadUserSetting(common.Id) returns (header.WidgetUserSetting);
+
+	rpc ReadCampaign(common.Id) returns (header.Campaign);
+	rpc ListCampaigns(common.Id) returns (header.Campaigns);
+	rpc CreateCampaign(header.Campaign) returns (header.Campaign);
+	rpc UpdateCampaign(header.Campaign) returns (header.Campaign);
+	rpc DeleteCampaign(header.Campaign) returns (common.Empty);
+
+	rpc SubmitImpression(header.Impression) returns (header.Impression);
+	rpc SubmitConversion(header.Conversion) returns (header.Conversion);
+	rpc SubmitUserCampaignStatus(header.UserCampaignStatus) returns (header.UserCampaignStatus);
+
+	rpc ReportCampaign(header.ReportCampaignRequest) returns (header.ReportCampaignResponse);
+	rpc ListConversions(header.ConversionRequest) returns (header.Conversions);
+	rpc ExportConversions(header.ConversionRequest) returns (header.ConversionsExported);
+	rpc UploadImage(header.UploadedImage) returns (header.UploadedImage);
+	rpc ListUploadedImage(common.Id) returns (header.UploadedImages);
+	rpc DeleteUploadedImage(header.UploadedImage) returns (common.Empty);
+}
+
+// search services
+service Search {
+	rpc SearchUsers(header.SearchUsersRequest) returns (header.SearchUsersResponse);
+	rpc SearchNotes(header.SearchNotesRequest) returns (header.SearchNotesResponse);
+}
+
+// bqreport services
+service Bqreport {
+	rpc AggregateConversations(bqreport.ConversationFilter) returns (bqreport.ConversationReport);
+	rpc AggregateConversationRates(bqreport.DimensionFilter) returns (bqreport.ConversationRateReport);
+	rpc AggregateConversationTags(bqreport.DimensionFilter) returns (bqreport.ConversationTagReport);
+	rpc AggregateConversationAgents(bqreport.ConversationAgentFilter) returns (bqreport.ConversationAgentReport);
+	rpc AggregateMessageOfAgents(bqreport.DimensionFilter) returns (bqreport.MessageOfAgentReport);
+	rpc AggregateAgentAvailabilities(bqreport.DimensionFilter) returns (bqreport.AgentAvailabilityReport);
+}
+
+// bizbot services
+service Bizbot {
+	rpc ListBots(common.Id) returns (header.Bots);
+	rpc GetBot(common.Id) returns (header.Bot);
+	rpc UpdateBotRunState(header.Bot) returns (header.Bot);
+	rpc CreateBot(header.Bot) returns (header.Bot);
+	rpc UpdateBot(header.Bot) returns (header.Bot);
+	rpc DeleteBot(common.Id) returns (common.Empty);
+	rpc OnEvent(header.RunRequest) returns (common.Empty);
+	rpc StartBot(header.RunRequest) returns (common.Empty);
+	rpc StopBot(header.RunRequest) returns (common.Empty);
+	rpc TryAction(header.RunRequest) returns (common.Empty);
+	rpc DoAction(header.RunRequest) returns (header.Actions);
+	rpc ReportBot(header.ReportBotRequest) returns (header.ReportBotResponse);
+	rpc ListObjects(header.ListObjectsRequest) returns (header.ListObjectsResponse);
+	rpc CreateBotRevision(header.Bot) returns (header.Bot);
+	rpc ListBotRevisions(common.Id) returns (header.Bots);
+}
+
+// sendback services
+service Sendback {
+	rpc CreateWebhook(header.Webhook) returns (header.Webhook);
+	rpc PingWebhook(common.Id) returns (header.WebhookTestResult);
+	rpc DeleteWebhook(common.Id) returns (common.Empty);
+	rpc ListWebhooks(common.Id) returns (header.Webhooks);
+	rpc ReadWebhook(common.Id) returns (header.Webhook);
+	rpc UpdateWebhook(header.Webhook) returns (header.Webhook);
+	rpc ListRecentIndexDeliveries(header.RecentIndexDeliveryRequest) returns (header.WebhookDeliveries);
+
+	rpc SendWebhookEvent(header.Event) returns (common.Empty);
+}

@@ -1,0 +1,14 @@
+version: 1
+env:
+- NAME=$NAME
+- DOCKERHOST=$DOCKERHOST
+- ORG=$ORG
+- VERSION=$VERSION
+
+steps:
+- image: gcr.io/cloud-builders/go@sha256:cf9912e22ec187afceb1593f99f2c8f92e2d30b35eed3b4adc05d5375cfe40d8
+  dir: /root/go/src/git.subiz.net/bizbot
+  volumes:
+  - $(pwd):/root/go/src/git.subiz.net/bizbot
+  command: |
+    GOCACHE=/root/go/src/git.subiz.net/bizbot/.cache CGO_ENABLED=0 go build -mod=vendor -ldflags="-s -w" -o bizbot || exit 1

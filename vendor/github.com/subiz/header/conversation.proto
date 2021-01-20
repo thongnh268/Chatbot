@@ -1,0 +1,453 @@
+syntax = "proto2";
+
+package conversation;
+
+option go_package = "github.com/subiz/header/conversation";
+
+import "common.proto";
+
+message Search {
+	optional common.Context ctx = 1;
+	optional string account_id = 3;
+	optional string keyword = 4;
+	optional int32 limit = 5;
+	optional string before_id = 6;
+	optional string after_id = 7;
+}
+
+message EsMessage {
+	optional string id = 2;
+	optional string account_id = 3;
+	optional string conversation_id = 4;
+	repeated string member_ids = 5;
+	optional string text = 6;
+	repeated string attachments = 7;
+	repeated string fields = 8;
+}
+
+message CountByTagsRequest {
+	optional string account_id = 2;
+	optional string integration_id = 3;
+	repeated string tag_ids = 4;
+	optional int32 from = 5; // deprecated
+	optional int32 to = 6; // deprecated
+	optional string range = 8;
+	enum Range {
+		hour = 0;
+		day = 1;
+	}
+	optional bool has_user = 9;
+	optional int32 from_hour = 10;
+	optional int32 to_hour = 11;
+}
+
+message CountByTag {
+	optional string tag_id = 2;
+	repeated int64 data = 3;
+}
+
+message CountByTagsResponse {
+	repeated CountByTag data = 2;
+}
+
+message AvgResponseTimeRequest {
+	optional string account_id = 2;
+	optional string integration_id = 3;
+	optional int32 from = 5; // deprecated
+	optional int32 to = 6; // deprecated
+	optional int32 from_hour = 7;
+	optional int32 to_hour = 8;
+}
+
+message AvgResponseTimeResponse {
+	optional double avg_response_sec = 2;
+}
+
+message TotalConversationResponse {
+	optional int64 total_conversation = 2;
+}
+
+message Ticket {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string conversation_id = 3;
+	optional string id = 4;
+	optional string state = 5;
+	optional string priority = 6;
+	optional int64 duedate = 7;
+	optional string subject = 8;
+	optional int64 created = 9;
+	repeated TicketAttributeData attributes = 10; // remove
+	optional int64 updated = 11;
+	repeated string user_ids = 12;
+	repeated string agent_ids = 13;
+	optional bool is_assigned = 14;
+	optional string updated_by = 15;
+	optional string created_by = 16;
+	optional string note = 19;
+}
+
+enum TicketListOrderBy {
+	created = 1;
+	duedate = 2;
+}
+
+message TicketListRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string state = 3; // "", "open", "resolved"
+	optional string agent_id = 4;
+	optional string order_by = 5; // created, duedate
+	optional string anchor = 6;
+	optional int32 limit = 7;
+	repeated string tag_ids = 8;
+	optional FilterCondition created = 9;
+	optional string priority = 10;
+}
+
+message Tickets {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	repeated Ticket tickets = 3;
+	optional string anchor = 4;
+}
+
+message ESTickets {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	repeated ESTicket tickets = 3;
+	optional string anchor = 4;
+}
+
+enum TicketPriority {
+	low = 0;
+	medium = 1;
+	high = 2;
+	urgent = 3;
+}
+
+message TicketAttributeData {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string ticket_id = 3;
+	optional string key = 4;
+
+	optional string state = 6;
+	optional int64 created = 7;
+	optional int64 modified = 8;
+
+	optional string text = 10;
+	optional double number = 11;
+	optional bool boolean = 12;
+	optional string datetime = 13;
+	repeated string list = 14;
+
+	optional string setter = 16;
+	optional string setter_type = 17;
+}
+
+message ServiceLevelAgreementTarget {
+	optional string priority = 1;
+	optional int32 resolve_within = 2; // hours
+	enum OperationalHours {
+		BUSINESS_HOURS = 0;
+	}
+	optional string operational_hours = 3;
+	optional bool notification = 4;
+}
+
+message ServiceLevelAgreement {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string id = 3;
+	optional string name = 4;
+	optional string description = 5;
+
+	enum AssignStrategy {
+		ALL_AGENTS = 0;
+		AGENT_GROUP = 1;
+		AGENT = 2;
+	}
+	optional string strategy = 6;
+	optional string assign_to = 7; // agent id, group id
+
+	repeated ServiceLevelAgreementTarget targets = 8;
+	optional bool is_default = 9;
+	optional int64 created = 10;
+	optional int64 updated = 11;
+	optional int32 order = 12;
+}
+
+message ServiceLevelAgreements {
+	optional common.Context ctx = 1;
+	repeated ServiceLevelAgreement service_level_agreements = 2;
+}
+
+message DeleteTicketAttrRequest {
+	optional common.Context ctx = 1;
+	optional string key = 2;
+}
+
+message GetTicketRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string conversation_id = 3;
+	optional string id = 4;
+}
+
+message DeleteTicketRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string conversation_id = 3;
+	optional string id = 4;
+}
+
+message ReportTicket {
+	optional string id = 2;
+	optional string account_id = 3;
+	optional string integration_id = 4;
+	optional string state = 5;
+	optional string priority = 6;
+	repeated string agent_ids = 7;
+	repeated string tag_ids = 8;
+	optional int64 created_at = 9;
+	optional int64 resolved_at = 10;
+	optional bool is_resolved = 11;
+	optional int64 resolve_time = 12; // seconds
+	optional string group_id = 14;
+	optional int64 closed_at = 15;
+	optional bool is_unresolved = 16;
+	optional bool is_violated = 17;
+	optional bool has_agent = 18;
+	repeated string user_ids = 19;
+}
+
+message CountTicketRequest {
+	optional string account_id = 3;
+	optional string integration_id = 4;
+	optional string state = 5;
+	optional string priority = 6;
+	optional string agent_id = 7;
+	optional string tag_id = 8;
+	optional string group_id = 9;
+	optional bool is_resolved = 10;
+	optional bool has_agent = 11;
+	optional int32 from_hour = 13;
+	optional int32 to_hour = 14;
+	optional string range = 15;
+	enum Range {
+		hour = 0;
+		day = 1;
+	}
+	optional bool is_unresolved = 16;
+	optional bool is_violated = 17;
+	optional string user_id = 18;
+}
+
+message CountTicketResponse {
+	repeated int64 data = 2;
+}
+
+message AvgResolveTimeRequest {
+	optional string account_id = 2;
+	optional string integration_id = 3;
+	optional string priority = 4;
+	optional string agent_id = 5;
+	optional string tag_id = 6;
+	optional string group_id = 7;
+	optional int32 from_hour = 9;
+	optional int32 to_hour = 10;
+	optional string range = 11;
+	enum Range {
+		hour = 0;
+		day = 1;
+	}
+}
+
+message AvgResolveTimeResponse {
+	optional double avg_resolve_sec = 2;
+}
+
+message AvailibilityReportRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string agent_id = 3;
+	optional string from = 5; // try date --rfc-3339=seconds date in rfc 3339 seconds standard. E.g: 2019-03-07T10:42:01+07:00
+	optional string range = 8;
+	enum Range {
+		hour = 0;
+		day = 1;
+		month = 2;
+	}
+	optional int32 number_of_points = 13;
+}
+
+message CountReportRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+
+	optional string integration_id = 3;
+	optional string metric = 4;
+	optional string from = 5; // try date --rfc-3339=seconds
+	optional string range = 8;
+	enum Range {
+		hour = 0;
+		day = 1;
+	}
+
+	optional string agent_id = 10;
+	optional string group_id = 11;
+	optional string tag_id = 12;
+	optional int32 number_of_points = 13;
+}
+
+message ReportResponse {
+	optional common.Context ctx = 1;
+	optional string from = 3;
+	optional string range = 4;
+	repeated int64 data = 5;
+}
+
+message FilterCondition {
+	optional string operator = 1; // eq | ne ...
+	optional string value = 2; // encoded json
+}
+
+message SearchConversationRequest {
+	optional string account_id = 2;
+	optional string user_id = 3;
+	optional string state = 4; // deprecated
+	optional string ticket_state = 5; // deprecated
+	optional int64 limit = 6;
+	optional string anchor = 7;
+	optional string connector_id = 8; // deprecated
+	optional string text = 9;
+	repeated string tag_ids = 10;
+	optional FilterCondition message_created = 11;
+	repeated string states = 12;
+	repeated string ticket_states = 13;
+	repeated string connector_ids = 14; // channel
+}
+
+message SearchConversationResponse {
+	// optional int64 total = 2;
+	repeated string conversation_ids = 3;
+	optional string anchor = 4;
+	repeated ESConversationMessage result = 5; // for preview matched messages
+}
+
+// conversation for index in elastic search
+message ESConversation {
+	optional string account_id = 2;
+	optional string user_id = 3;
+	repeated string tag_ids = 4;
+ 	optional string state = 5;
+	optional string ticket_state = 6;
+	optional string id = 9;
+	optional int64 created = 10; // unix seconds
+	repeated string segment_ids = 11;
+	optional bool is_replied = 12; // deprecated
+	optional int64 replied_at = 13; // deprecated
+	repeated string assigned_agent_ids = 14;
+	optional string assigned_group_id = 15;
+	repeated string agent_ids = 16; // deprecated
+	optional string connector_id = 17;
+	optional string channel_source = 18;
+	optional int64 last_message_time = 19;
+	optional string connector_type = 20;
+	optional bool user_replied = 22;
+	optional bool agent_replied = 23;
+	optional int64 agent_replied_at = 24; // unix seconds
+	optional bool replied_by_bots = 25;
+	optional bool replied_by_agents = 26;
+	message ResponseTime {
+		optional string agent_id = 1;
+		optional int64 seconds = 2;
+	}
+	repeated ResponseTime response_times = 27;
+	repeated string replied_agent_ids = 28;
+}
+
+// conversation message for index in elastic search
+message ESConversationMessage {
+	optional string account_id = 2;
+	optional string user_id = 3;
+	optional string conversation_state = 5;
+	optional string ticket_state = 6;
+	optional string connector_id = 7;
+	optional string text = 8;
+	optional string conversation_id = 9;
+	optional int64 created = 10; // unix seconds
+	optional string id = 11; // event id
+	repeated string conversation_tag_ids = 12;
+}
+
+message ESTicket {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string conversation_id = 3;
+	optional string id = 4;
+	optional string state = 5;
+	optional string priority = 6;
+	optional int64 duedate = 7;
+	optional int64 created = 9; // unix seconds
+	repeated string user_ids = 12;
+	repeated string agent_ids = 13;
+	repeated string tag_ids = 17;
+}
+
+message ConversationListRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string assigned_agent_id = 3;
+	optional string assigned_group_id = 4;
+	optional bool agent_replied = 6;
+	optional FilterCondition agent_replied_at = 7;
+	optional FilterCondition created = 9;
+	repeated string connector_ids = 10;
+	optional string channel_source = 11;
+	optional string anchor = 14;
+	optional int64 limit = 15;
+	repeated string agent_ids = 16; // any of
+	optional FilterCondition user_id = 17;
+	optional FilterCondition tag_ids = 18;
+	repeated string connector_types = 19; // any of
+	optional FilterCondition state = 20;
+	optional bool user_replied = 21;
+	optional bool replied_by_bots = 22;
+	optional bool replied_by_agents = 23;
+	optional FilterCondition response_time = 24;
+	optional string replied_agent_id = 25;
+}
+
+message ConversationListResponse {
+	optional string anchor = 2;
+	repeated ESConversation result = 3;
+	optional int64 total = 4;
+	repeated string conversation_ids = 5;
+}
+
+message ReportConversationsRequest {
+	optional common.Context ctx = 1;
+	optional string account_id = 2;
+	optional string assigned_agent_id = 3;
+	optional string assigned_group_id = 4;
+	optional bool agent_replied = 6;
+	optional FilterCondition agent_replied_at = 7;
+	optional FilterCondition created = 9;
+	repeated string connector_ids = 10;
+	optional string channel_source = 11;
+	repeated string agent_ids = 16; // any of
+	optional FilterCondition user_id = 17;
+	optional FilterCondition tag_ids = 18;
+	repeated string connector_types = 19; // any of
+	optional FilterCondition state = 20;
+	optional bool user_replied = 21;
+	optional bool replied_by_bots = 22;
+	optional bool replied_by_agents = 23;
+	optional FilterCondition response_time = 24;
+	optional string replied_agent_id = 25;
+	optional string range = 26; // hour | day
+	optional int64 number_of_points = 29;
+	optional string from = 30; // rfc3339
+}

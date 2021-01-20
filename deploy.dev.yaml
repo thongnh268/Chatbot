@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bizbot
+spec:
+  clusterIP: None
+  selector:
+    app: bizbot
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bizbot
+  labels:
+    app: bizbot
+    type: ms
+spec:
+  selector:
+    matchLabels:
+      app: bizbot
+  serviceName: bizbot
+  replicas: 2
+  podManagementPolicy: "Parallel"
+  template:
+    metadata:
+      labels:
+        app: bizbot
+        type: ms
+    spec:
+      containers:
+      - name: bizbot
+        image: $IMG
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 1m
